@@ -4,7 +4,7 @@ system:
 ai:
   provider: "openai" # "openai" or "vertexai"
   openai:
-    model: "gpt-4o-mini" # Check the list of available models by curl https://api.openai.iniad.org/api/v1 -H "Authorization: Bearer $ALERT_MENTA_APIKEY"
+    model: "gpt-4o-mini" # Check the list of available models by curl -X GET https://api.openai.iniad.org/api/v1 \ -H "Authorization: Bearer $ALERT_MENTA_APIKEY"
   vertexai:
     project: "<YOUR_PROJECT_ID>"
     location: "us-central1"
