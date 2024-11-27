@@ -50,11 +50,21 @@ jobs:
       - name: Add Comment
         run: |
           if [[ "$COMMAND" == "ask" ]]; then
-            ./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.ALERT_MENTA_TOKEN }} -api-key ${{ secrets.ALERT_MENTA_APIKEY }} -command $COMMAND -config $CONFIG_FILE -intent "$INTENT"
+            RESPONSE=$(./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.ALERT_MENTA_TOKEN }} -api-key ${{ secrets.ALERT_MENTA_APIKEY }} -command $COMMAND -config $CONFIG_FILE -intent "$INTENT")
           else
-            ./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.ALERT_MENTA_TOKEN }} -api-key ${{ secrets.ALERT_MENTA_APIKEY }} -command $COMMAND -config $CONFIG_FILE
+            RESPONSE=$(./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.ALERT_MENTA_TOKEN }} -api-key ${{ secrets.ALERT_MENTA_APIKEY }} -command $COMMAND -config $CONFIG_FILE)
           fi
-          if [[ -z "$COMMENT_BODY" ]]; then
+
+          # クォータ超過エラーハンドリング
+          if echo "$RESPONSE" | grep -q "429 Too Many Requests"; then
+            echo "エラー: APIクォータを超過しました。処理を停止します。"
+            exit 1
+          fi
+
+          # コメント内容が空の場合のエラーチェック
+          if [[ -z "$RESPONSE" ]]; then
             echo "エラー: コメント内容が生成されていないため、コメント作成をスキップします。"
             exit 1
           fi
+
+          echo "$RESPONSE"
