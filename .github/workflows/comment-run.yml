@@ -1,4 +1,4 @@
-
+# .github/workflows/comment-run.yml
 name: "Comment run"
 on:
   issue_comment:
@@ -6,13 +6,10 @@ on:
 
 jobs:
   comment-run:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
-      with:
-        # 0 indicates all history
-        fetch-depth: 0
-    - uses: nwtgck/actions-comment-run@v1.0
+    - uses: actions/checkout@v4
+    - uses: nwtgck/actions-comment-run@v3
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        allowed-associations: '["OWNER"]' 
+        allowed-associations: '["OWNER"]'
