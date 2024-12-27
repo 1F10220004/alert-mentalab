@@ -2,7 +2,7 @@ name: Issue Comment Bot
 
 on:
   issue_comment:
-    types: [created]
+    types: []
 
 jobs:
   comment:
