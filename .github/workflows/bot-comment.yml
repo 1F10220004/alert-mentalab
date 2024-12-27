@@ -10,10 +10,16 @@ jobs:
     steps:
       - name: Post a comment
         env:
-          GITHUB_TOKEN: ${{ secrets.ALERTBOT }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          curl -X POST \
+          RESPONSE=$(curl -s -o response.json -w "%{http_code}" \
+            -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
-            -d '{"body": "Thank you for your comment! This response is automated."}'
+            -d '{"body": "Thank you for your comment! This response is automated."}')
+          if [ "$RESPONSE" -ne 201 ]; then
+            echo "Error: Failed to post comment"
+            cat response.json
+            exit 1
+          fi
