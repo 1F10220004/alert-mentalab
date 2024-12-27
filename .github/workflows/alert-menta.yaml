@@ -47,7 +47,8 @@ jobs:
         run: |
           curl -H "Authorization: token ${{ secrets.ALERT_MENTA_TOKEN }}" -L -o .alert-menta.user.yaml "https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}/main/.alert-menta.user.yaml" && echo "CONFIG_FILE=./.alert-menta.user.yaml" >> $GITHUB_ENV
 
-      - name: Add Comment
+      - name: Generate Comment Response
+        id: generate_response
         run: |
           if [[ "$COMMAND" == "ask" ]]; then
             RESPONSE=$(./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.ALERT_MENTA_TOKEN }} -api-key ${{ secrets.ALERT_MENTA_APIKEY }} -command $COMMAND -config $CONFIG_FILE -intent "$INTENT")
@@ -55,16 +56,22 @@ jobs:
             RESPONSE=$(./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.ALERT_MENTA_TOKEN }} -api-key ${{ secrets.ALERT_MENTA_APIKEY }} -command $COMMAND -config $CONFIG_FILE)
           fi
 
-          # クォータ超過エラーハンドリング
           if echo "$RESPONSE" | grep -q "429 Too Many Requests"; then
             echo "エラー: APIクォータを超過しました。処理を停止します。"
             exit 1
           fi
 
-          # コメント内容が空の場合のエラーチェック
           if [[ -z "$RESPONSE" ]]; then
-            echo "エラー: コメント内容が生成されていないため、コメント作成をスキップします。"
+            echo "エラー: コメント内容が生成されていません。"
             exit 1
           fi
 
-          echo "$RESPONSE"
+          echo "RESPONSE=$RESPONSE" >> $GITHUB_ENV
+
+      - name: Post Comment as Bot
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.ALERTBOT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -d "{\"body\": \"${{ env.RESPONSE }}\"}"
