@@ -2,7 +2,7 @@ name: Issue Comment Bot
 
 on:
   issue_comment:
-    types: []
+    types: [created]
 
 jobs:
   comment:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Post a comment
         env:
-          GITHUB_TOKEN: ${{ secrets.ALERTBO }}
+          GITHUB_TOKEN: ${{ secrets.ALERTBOT }}
         run: |
           RESPONSE=$(curl -s -o response.json -w "%{http_code}" \
             -X POST \
