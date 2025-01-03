@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Post a comment
         env:
-          GITHUB_TOKEN: ${{ secrets.ALERTBOT }}
+          GITHUB_TOKEN: ${{ secrets.ALERTBT }}
         run: |
           RESPONSE=$(curl -s -o response.json -w "%{http_code}" \
             -X POST \
