@@ -68,8 +68,15 @@ jobs:
 
           echo "RESPONSE=$RESPONSE" >> $GITHUB_ENV
 
-      - name: Post Comment as Bot
+      - name: Add Comment
         run: |
+          if [[ "$COMMAND" == "ask" ]]; then
+            RESPONSE=$(./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.GH_TOKEN }} -api-key ${{ secrets.OPENAI_API_KEY }} -command $COMMAND -config $CONFIG_FILE -intent "$INTENT")
+          else
+            RESPONSE=$(./alert-menta -owner ${{ github.repository_owner }} -issue ${{ github.event.issue.number }} -repo ${{ env.REPOSITORY_NAME }} -github-token ${{ secrets.GH_TOKEN }} -api-key ${{ secrets.OPENAI_API_KEY }} -command $COMMAND -config $CONFIG_FILE)
+          fi
+          
+          # コメントをボットアカウントで投稿
           curl -X POST \
             -H "Authorization: token ${{ secrets.ALERTBOT }}" \
             -H "Accept: application/vnd.github.v3+json" \
