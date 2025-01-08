@@ -5,21 +5,14 @@ on:
     types: [created]
 
 jobs:
-  comment:
+  bot-action:
+    if: github.event.comment.user.login != 'ALERTBOT-chain' # ボットアカウント名を指定
     runs-on: ubuntu-latest
     steps:
-      - name: Post a comment
-        env:
-          GITHUB_TOKEN: ${{ secrets.ALERTBT }}
+      - name: Respond to Issue Comment
         run: |
-          RESPONSE=$(curl -s -o response.json -w "%{http_code}" \
-            -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.ALERTBOT }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
-            -d '{"body": "Thank you for your comment! This response is automated."}')
-          if [ "$RESPONSE" -ne 201 ]; then
-            echo "Error: Failed to post comment"
-            cat response.json
-            exit 1
-          fi
+            -d '{"body": "Thank you for your comment! This response is automated."}'
